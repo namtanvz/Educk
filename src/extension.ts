@@ -7,40 +7,29 @@ import { MessageHandlerData } from '@estruyf/vscode';
 
 export function activate(context: vscode.ExtensionContext) {
 
-	let disposable = vscode.commands.registerCommand('vscode-react-webview-starter.openWebview', () => {
+	let disposable = vscode.commands.registerCommand('educk.openWebview', () => {
 		const panel = vscode.window.createWebviewPanel(
 			'react-webview',
-			'React Webview',
-			vscode.ViewColumn.One,
+			'Educk',
+			vscode.ViewColumn.Beside,
 			{
 				enableScripts: true,
 				retainContextWhenHidden: true
 			}
 		);
-
-		panel.webview.onDidReceiveMessage(message => {
-			const { command, requestId, payload } = message;
-		
-			if (command === "GET_DATA") {
-				// Do something with the payload
-		
-				// Send a response back to the webview
+		panel.webview.onDidReceiveMessage(async (message) => {
+			const {command, payload} = message;
+			await vscode.commands.executeCommand(
+				"workbench.action.focusFirstEditorGroup"
+			);
+			if(command === 'GET_EDITOR_TEXT'){
 				panel.webview.postMessage({
 					command,
-					requestId, // The requestId is used to identify the response
-					payload: `Hello from the extension!`
+					payload: getEditorText()
 				} as MessageHandlerData<string>);
-			} else if (command === "GET_DATA_ERROR" ) {
-				panel.webview.postMessage({
-					command,
-					requestId, // The requestId is used to identify the response
-					error: `Oops, something went wrong!`
-				} as MessageHandlerData<string>);
-			} else if (command === "POST_DATA") {
-				vscode.window.showInformationMessage(`Received data from the webview: ${payload.msg}`);
+				vscode.window.showInformationMessage('Asked for a Basic Knowledge of Python');
 			}
-		}, undefined, context.subscriptions);
-
+		});
 		panel.webview.html = getWebviewContent(context, panel.webview);
 	});
 
@@ -49,6 +38,17 @@ export function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+function getEditorText() {
+	const editorText = vscode.window.activeTextEditor?.document.getText();
+	return editorText;
+}
+
+function getEditorError() {
+	const diagnostics = vscode.languages.getDiagnostics();
+	return diagnostics;
+  }
+
 
 
 const getWebviewContent = (context: ExtensionContext, webview: Webview) => {
@@ -78,4 +78,4 @@ const getWebviewContent = (context: ExtensionContext, webview: Webview) => {
 		<script src="${scriptUrl}"></script>
 	</body>
 	</html>`;
-}
+};
