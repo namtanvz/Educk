@@ -14,6 +14,7 @@ import Prism from "prismjs";
 // import * as dotenv from 'dotenv';
 import { messageHandler } from "@estruyf/vscode/dist/client";
 import axios from "axios";
+import { setgroups } from "process";
 
 interface Message {
   title: string;
@@ -62,6 +63,12 @@ export const App: React.FunctionComponent<
     });
   };
 
+  const requestError = () => {
+    messageHandler.request<string[]>('GET_EDITOR_ERROR').then((error) => {
+      setEditorError(error);
+    });
+  };
+
   const extractQuestionFromCode = (text : string) => {
     const match = text.match(/'''([\s\S]+?)'''([\s\S]+)/);
     if(match) {
@@ -93,19 +100,46 @@ export const App: React.FunctionComponent<
       setNewMessageAdded(true);
     }
   };
+  const setupButton = () => {
+    setNewMessageAdded(true);
+    setInputValue("");
+    setMessage("");
+    setIsLoading(true);
 
-//Red flag
-  const handlePromptKnowledgeClick = async() => {
     requestEditorText();
-    const query = JSON.stringify({
+    extractQuestionFromCode(code);
+    requestError();
+  };
+
+  const handlePromptKnowledgeClick = async() => {
+
+    const messageTitle = "Please help me with the basic knowledge";
+    console.log(messageTitle);
+    if (!currentTitle) {
+      setCurrentTitle(messageTitle);
+    }
+    const userMessage: Message = {
+      title: messageTitle,
+      role: "user",
+      content: "Please help me with the basic knowledge",
+    };
+    setChatHistory((chatHistory) => [...(chatHistory || []), userMessage]);
+    setupButton();
+
+    const query = {
       question: question,
+      // question: "Given two numbers, write a Python code to find the Maximum of these two numbers.",
       curr_code: code,
-    });
+      error: editorError,
+      //still need to add the solution
+      solution: " ",
+    };
     console.log(query);
-    const url = 'http://localhost:8000/dev/basic-knowledge';
+
+    const url = local + '/dev/basic-knowledge';
     //This is the axios version, but not sure if it works
     try{
-      const  response = await axios.post(url, {query});
+      const response = await axios.get(url, { params: query });
       console.log(response.data);
       setMessage(response.data.response);
       setNewMessageAdded(true);
@@ -114,85 +148,117 @@ export const App: React.FunctionComponent<
     }finally{
       setIsLoading(false);
     }
-
-    // fetch(url.toString(), {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: query,
-    //   }).then((response) => {response.json().then((data) => {
-    //     console.log(data);
-    //     setMessage(data.response);
-    //     setNewMessageAdded(true);
-    //   }).finally(() => { setIsLoading(false); });
-    // });
   };
 
   const handlePromptSyntaxClick = async () => {
-    requestEditorText();
-    const query = JSON.stringify({
+    const messageTitle = "Please help me with the basic syntax";
+    console.log(messageTitle);
+    if (!currentTitle) {
+      setCurrentTitle(messageTitle);
+    }
+    const userMessage: Message = {
+      title: messageTitle,
+      role: "user",
+      content: "Please help me with the basic syntax",
+    };
+    setChatHistory((chatHistory) => [...(chatHistory || []), userMessage]);
+    setupButton();
+
+    const query = {
       question: question,
       curr_code: code,
-    });
+      error: editorError,
+      //still need to add the solution
+      solution: " ",
+    };
     console.log(query);
-    const url = new URL('http://localhost:8000/dev/basic-syntax');
-    fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: query,
-      }).then((response) => {response.json().then((data) => {
-        console.log(data);
-        setMessage(data.response);
-        setNewMessageAdded(true);
-      }).finally(() => { setIsLoading(false); });
-    });
+
+    const url = local + '/dev/basic-syntax';
+    //This is the axios version, but not sure if it works
+    try{
+      const response = await axios.get(url, { params: query });
+      console.log(response.data);
+      setMessage(response.data.response);
+      setNewMessageAdded(true);
+    } catch (error) {
+      console.log(error);
+    }finally{
+      setIsLoading(false);
+    }
   };
 
   const handlePromptErrorClick = async () => {
-    requestEditorText();
-    const query = JSON.stringify({
+    const messageTitle = "Please help me with the errors";
+    console.log(messageTitle);
+    if (!currentTitle) {
+      setCurrentTitle(messageTitle);
+    }
+    const userMessage: Message = {
+      title: messageTitle,
+      role: "user",
+      content: "Please help me with the errors",
+    };
+    setChatHistory((chatHistory) => [...(chatHistory || []), userMessage]);
+    setupButton();
+
+    const query = {
       question: question,
       curr_code: code,
-    });
+      error: editorError,
+      //still need to add the solution
+      solution: " ",
+    };
     console.log(query);
-    const url = new URL('http://localhost:8000/dev/what-error');
-    fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: query,
-      }).then((response) => {response.json().then((data) => {
-        console.log(data);
-        setMessage(data.response);
-        setNewMessageAdded(true);
-      }).finally(() => { setIsLoading(false); });
-    });
+
+    const url = local + '/dev/what-error';
+    //This is the axios version, but not sure if it works
+    try{
+      const response = await axios.get(url, { params: query });
+      console.log(response.data);
+      setMessage(response.data.response);
+      setNewMessageAdded(true);
+    } catch (error) {
+      console.log(error);
+    }finally{
+      setIsLoading(false);
+    }
   };
 
   const handlePromptDunnoClick = async () => {
-    requestEditorText();
-    const query = JSON.stringify({
+    const messageTitle = "I don't know what to do, help me";
+    console.log(messageTitle);
+    if (!currentTitle) {
+      setCurrentTitle(messageTitle);
+    }
+    const userMessage: Message = {
+      title: messageTitle,
+      role: "user",
+      content: "I don't know what to do, help me",
+    };
+    setChatHistory((chatHistory) => [...(chatHistory || []), userMessage]);
+    setupButton();
+
+    const query = {
       question: question,
       curr_code: code,
-    });
+      error: editorError,
+      //still need to add the solution
+      solution: " ",
+    };
     console.log(query);
-    const url = new URL('http://localhost:8000/dev/dunno-what-to-do');
-    fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: query,
-      }).then((response) => {response.json().then((data) => {
-        console.log(data);
-        setMessage(data.response);
-        setNewMessageAdded(true);
-      }).finally(() => { setIsLoading(false); });
-    });
+
+    const url = local + '/dev/dunno-what-to-do';
+    //This is the axios version, but not sure if it works
+    try{
+      const response = await axios.get(url, { params: query });
+      console.log(response.data);
+      setMessage(response.data.response);
+      setNewMessageAdded(true);
+    } catch (error) {
+      console.log(error);
+    }finally{
+      setIsLoading(false);
+    }
   };
 // Red flag
 
@@ -289,11 +355,11 @@ export const App: React.FunctionComponent<
             </button>
             {showPromptsButton && (
               <div className="prompt-buttons">
-                <button onClick={handlePromptKnowledgeClick} className="btn">
+                <button onClick={handlePromptSyntaxClick} className="btn">
                   <div className="promptName">Basic Syntax</div>
                   <div className="promptDescription">What is the correct syntax?</div>
                 </button>
-                <button onClick={handlePromptSyntaxClick} className="btn">
+                <button onClick={handlePromptKnowledgeClick} className="btn">
                   <div className="promptName">Basic Knowledge</div>
                   <div className="promptDescription">Don't understand what is the question?</div>
                 </button>
