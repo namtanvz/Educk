@@ -94,14 +94,49 @@ export const App: React.FunctionComponent<
     }
   };
 
-  const handlePromptClick = async () => {
+//Red flag
+  const handlePromptKnowledgeClick = async() => {
     requestEditorText();
     const query = JSON.stringify({
       question: question,
       curr_code: code,
     });
     console.log(query);
-    const url = new URL('http://localhost:8000/dev/basic-knowledge');
+    const url = 'http://localhost:8000/dev/basic-knowledge';
+    //This is the axios version, but not sure if it works
+    try{
+      const  response = await axios.post(url, {query});
+      console.log(response.data);
+      setMessage(response.data.response);
+      setNewMessageAdded(true);
+    } catch (error) {
+      console.log(error);
+    }finally{
+      setIsLoading(false);
+    }
+
+    // fetch(url.toString(), {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: query,
+    //   }).then((response) => {response.json().then((data) => {
+    //     console.log(data);
+    //     setMessage(data.response);
+    //     setNewMessageAdded(true);
+    //   }).finally(() => { setIsLoading(false); });
+    // });
+  };
+
+  const handlePromptSyntaxClick = async () => {
+    requestEditorText();
+    const query = JSON.stringify({
+      question: question,
+      curr_code: code,
+    });
+    console.log(query);
+    const url = new URL('http://localhost:8000/dev/basic-syntax');
     fetch(url.toString(), {
       method: 'POST',
       headers: {
@@ -115,6 +150,51 @@ export const App: React.FunctionComponent<
       }).finally(() => { setIsLoading(false); });
     });
   };
+
+  const handlePromptErrorClick = async () => {
+    requestEditorText();
+    const query = JSON.stringify({
+      question: question,
+      curr_code: code,
+    });
+    console.log(query);
+    const url = new URL('http://localhost:8000/dev/what-error');
+    fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: query,
+      }).then((response) => {response.json().then((data) => {
+        console.log(data);
+        setMessage(data.response);
+        setNewMessageAdded(true);
+      }).finally(() => { setIsLoading(false); });
+    });
+  };
+
+  const handlePromptDunnoClick = async () => {
+    requestEditorText();
+    const query = JSON.stringify({
+      question: question,
+      curr_code: code,
+    });
+    console.log(query);
+    const url = new URL('http://localhost:8000/dev/dunno-what-to-do');
+    fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: query,
+      }).then((response) => {response.json().then((data) => {
+        console.log(data);
+        setMessage(data.response);
+        setNewMessageAdded(true);
+      }).finally(() => { setIsLoading(false); });
+    });
+  };
+// Red flag
 
   const getMessage = async (message: string) => {
     const messageTitle = currentTitle || inputValue;
@@ -209,19 +289,19 @@ export const App: React.FunctionComponent<
             </button>
             {showPromptsButton && (
               <div className="prompt-buttons">
-                <button onClick={handlePromptClick} className="btn">
+                <button onClick={handlePromptKnowledgeClick} className="btn">
                   <div className="promptName">Basic Syntax</div>
-                  <div className="promptDescription">Prompt Description</div>
+                  <div className="promptDescription">What is the correct syntax?</div>
                 </button>
-                <button onClick={handlePromptClick} className="btn">
+                <button onClick={handlePromptSyntaxClick} className="btn">
                   <div className="promptName">Basic Knowledge</div>
-                  <div className="promptDescription">Prompt Description</div>
+                  <div className="promptDescription">Don't understand what is the question?</div>
                 </button>
-                <button onClick={handlePromptClick} className="btn">
+                <button onClick={handlePromptErrorClick} className="btn">
                   <div className="promptName">Take my Error</div>
-                  <div className="promptDescription">Prompt Description</div>
+                  <div className="promptDescription">What? Why? WHYYY!!??</div>
                 </button>
-                <button onClick={handlePromptClick} className="btn">
+                <button onClick={handlePromptDunnoClick} className="btn">
                   <div className="promptName">I don't know what to do</div>
                   <div className="promptDescription">If you have no idea, click here</div>
                 </button>
