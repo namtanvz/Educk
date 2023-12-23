@@ -58,10 +58,16 @@ export const App: React.FunctionComponent<
   
 
   const requestEditorText = () => {
-    messageHandler.request<string>('GET_EDITOR_TEXT').then((text) => {
-      setCode(text);
+    console.log('requesting editor text');
+    messageHandler.request<string>('GET_EDITOR_TEXT').then((msg) => {
+      setCode(msg);
+      console.log('msg:', msg);
     });
   };
+
+  React.useEffect(() => {
+    // console.log('CODE: ', code);
+  }, [code]);
 
   const requestError = () => {
     messageHandler.request<string>('GET_EDITOR_ERROR').then((error) => {
@@ -101,20 +107,23 @@ export const App: React.FunctionComponent<
     }
   };
   const setupButton = () => {
-    setNewMessageAdded(true);
-    setInputValue("");
-    setMessage("");
-    setIsLoading(true);
+    // setNewMessageAdded(true);
+    // setInputValue("");
+    // setMessage("");
+    // setIsLoading(true);
 
     requestEditorText();
-    extractQuestionFromCode(code);
-    requestError();
+    // extractQuestionFromCode(code);
+    // requestError();
+    // console.log('question:', question);
+    console.log('code:', code);
+    // console.log('error:', editorError);
   };
 
   const handlePromptKnowledgeClick = async() => {
 
     const messageTitle = "Please help me with the basic knowledge";
-    console.log(messageTitle);
+    // console.log(messageTitle);
     if (!currentTitle) {
       setCurrentTitle(messageTitle);
     }
@@ -134,20 +143,25 @@ export const App: React.FunctionComponent<
       //still need to add the solution
       solution: " ",
     };
-    console.log(query);
+    // console.log(query);
 
-    const url = local + '/dev/basic-knowledge';
-    //This is the axios version, but not sure if it works
-    try{
-      const response = await axios.get(url, { params: query });
-      console.log(response.data);
-      setMessage(response.data.response);
-      setNewMessageAdded(true);
-    } catch (error) {
-      console.log(error);
-    }finally{
-      setIsLoading(false);
-    }
+    // const url = local + '/dev/basic-knowledge';
+    // //This is the axios version, but not sure if it works
+    // try {
+    //   const response = await axios.post(url, query, {
+    //     headers: {
+    //       'Accept': 'application/json',
+    //       'Content-Type': 'application/json'
+    //     },
+    //   });
+    //   console.log(response.data);
+    //   setMessage(response.data.response);
+    //   setNewMessageAdded(true);
+    // } catch (error) {
+    //   console.log(error);
+    // }finally{
+    //   setIsLoading(false);
+    // }
   };
 
   const handlePromptSyntaxClick = async () => {
@@ -317,6 +331,7 @@ export const App: React.FunctionComponent<
       setNewMessageAdded(false);
     }
   }, [newMessageAdded]);
+
 
   const chatMessage = (chatHistory ?? []).filter(
     (chatHistory) => chatHistory.title === currentTitle

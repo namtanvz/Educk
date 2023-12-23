@@ -18,15 +18,16 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		);
 		panel.webview.onDidReceiveMessage(async (message) => {
-			const {command, payload} = message;
+			const { command, requestId, payload } = message;
 			await vscode.commands.executeCommand(
 				"workbench.action.focusFirstEditorGroup"
 			);
 			if (command === 'GET_EDITOR_TEXT'){
-				panel.webview.postMessage({
-					command,
-					payload: getEditorText()
-				} as MessageHandlerData<string>);
+          panel.webview.postMessage({
+            command,
+            requestId,
+            payload: getEditorText(),
+          } as MessageHandlerData<string>) ;
 				vscode.window.showInformationMessage('Educk🦆: Quack the code');
 			}
       else if (command === "GET_EDITOR_ERROR") {
@@ -36,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
         } as MessageHandlerData<string>);
         vscode.window.showInformationMessage("Educk🦆: Quack the editor errors,");
       }
-		});
+		}, context.subscriptions);
 		panel.webview.html = getWebviewContent(context, panel.webview);
 	});
 
@@ -48,8 +49,16 @@ export function deactivate() {}
 
 //the functions use within the webview
 function getEditorText() {
-	const editorText = vscode.window.activeTextEditor?.document.getText();
-	return editorText;
+  const editor = vscode.window.activeTextEditor;
+  if(editor){
+    const editorText = editor.document.getText();
+    vscode.window.showInformationMessage(`All text in the file: ${editorText}`);
+    return editorText;
+  }
+  else{
+    vscode.window.showInformationMessage(`No active editor`);
+    return ;
+  }
 }
 
 function getEditorError() {

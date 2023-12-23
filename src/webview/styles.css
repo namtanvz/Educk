@@ -46,14 +46,21 @@ body{
   bottom: 0; 
   left: 50%; 
   transform: translateX(-50%); 
-  width: 650px; 
+  width: 90%;
+  width: 650px;
   padding: 10px;
+  box-sizing: border-box; 
 }
+
 
 .bottomSection .info{
   color: rgba(255,255,255,0.5);
   font-size: 11px;
   padding: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%; 
 }
 
 .bottomSection .inputContainer{
@@ -66,7 +73,7 @@ body{
 
 .inputText{
   width: 100%;
-  font-size: 18px;
+  font-size: 16px;
   border: none;
   background-color: rgba(255,255,255,0.05);
   padding: 12px 15px;
@@ -93,8 +100,9 @@ input:focus{
 }
 
 .submit-icon {
-  font-size: 30px;
+  font-size: 28px;
   color: rgb(52, 53, 63, 0.5); 
+  border-radius: 10px;
 }
 
 .feed{
@@ -208,15 +216,6 @@ li.assistant-message .role-icon {
   background-color: #71717a;
 }
 
-/* .prompt-buttons-container {
-  margin-bottom: 10px; 
-}
-
-.prompt-button {
-  width: 100%;
-  margin-bottom: 10px; 
-} */
-
 .loading {
   text-align: center;
   padding: 10px;
@@ -234,7 +233,7 @@ li.assistant-message .role-icon {
   border: none;
   color: white;
   padding: 5px 5px; 
-  margin: 4px 2px;
+  margin: 2px 1px;
   cursor: pointer;
   border-radius: 4px;
 }
@@ -246,6 +245,11 @@ li.assistant-message .role-icon {
   border-radius: 10px !important;
   outline: 0.5px solid !important;
   outline-color: #565968 !important;
+  width: 100%;
+  text-align: left; 
+  height: 60px;
+  padding: 5px;
+  min-width: 120px;
 }
 
 .prompt-buttons .btn:hover {
@@ -256,19 +260,36 @@ li.assistant-message .role-icon {
   background-color: transparent;
 }
 
-.promptName{
+.promptName, .promptDescription {
   background-color: transparent !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%; 
+}
+
+.promptName{
   padding: 5px 0 1px 10px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #babac5;
 }
 
 .promptDescription{
-  background-color: transparent !important;
   padding: 0 0 5px 10px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: lighter;
   color: #7a7b86;
+}
+
+@media (max-width: 676px) {
+  .bottomSection {
+    padding: 5px; 
+    width: 95%; 
+  }
+
+  .prompt-buttons .btn {
+    padding: 5px; 
+  }
 }
 
