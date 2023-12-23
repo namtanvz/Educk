@@ -10,7 +10,10 @@ const Navbar: React.FunctionComponent = () => {
     <div className="Navbar">
       <BootstrapNavbar expand="lg">
         <Container>
-          <BootstrapNavbar.Brand>Educk</BootstrapNavbar.Brand>
+          <BootstrapNavbar.Brand className="container-Navbar">
+            <div className="navbar-Logo"></div>
+          </BootstrapNavbar.Brand>
+          
         </Container>
       </BootstrapNavbar>
     </div>

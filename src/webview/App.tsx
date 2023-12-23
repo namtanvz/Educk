@@ -15,6 +15,7 @@ import Prism from "prismjs";
 import { messageHandler } from "@estruyf/vscode/dist/client";
 import axios from "axios";
 import { setgroups } from "process";
+import { match } from "assert";
 
 interface Message {
   title: string;
@@ -37,11 +38,19 @@ export const App: React.FunctionComponent<
   const [newMessageAdded, setNewMessageAdded] = React.useState<boolean>(false);
   const [chatHistory, setChatHistory] = React.useState<Message[]>();
   const chatOutputRef = React.useRef<HTMLDivElement>(null);
-  
   const [code, setCode] = React.useState<string>("");
   const [question, setQuestion] = React.useState<string>("");
   const [editorError, setEditorError] = React.useState<string>("");
+  const [apiEndpoint, setAPIEndpoint] = React.useState<string>("");
+  const [query, setQuery] = React.useState({
+    question: question,
+    curr_code: code,
+    error: editorError,
+    solution: " ",
+  });
   const local = "http://localhost:8000";
+  const countRef = React.useRef(0);
+  const [text, setText] = React.useState<string>("");
 
   React.useEffect(() => {
     if (message) {
@@ -52,42 +61,74 @@ export const App: React.FunctionComponent<
       };
       setChatHistory((chatHistory) => [...(chatHistory || []), systemMessage]);
       setNewMessageAdded(true);
-  
     }
   }, [message]);
   
-
+  console.log(chatHistory);
+  // React.useEffect(() => {
+  //   if (!setQueryOnce.current) {
+  //     setQuery({
+  //       question: question,
+  //       curr_code: code,
+  //       error: editorError,
+  //       solution: " ",
+  //     });
+  //     setQueryOnce.current = true;
+  //     console.log("setQuery");
+  //   }
+  // }, [question, code, editorError]);
+  
   const requestEditorText = () => {
     console.log('requesting editor text');
     messageHandler.request<string>('GET_EDITOR_TEXT').then((msg) => {
-      setCode(msg);
-      console.log('msg:', msg);
+      // extractQuestionFromCode(msg);
+      setText(msg);
     });
   };
 
-  React.useEffect(() => {
-    // console.log('CODE: ', code);
-  }, [code]);
+  // const extractQuestionFromCode = (text : string) => {
+  //   const match = text.match(/'''([\s\S]+?)'''([\s\S]+)/);
+  //   React.useEffect(() => {
+  //     if(match){
+  //       const extractQuestion = match[1].trim();
+  //       const extractCode = match[2].trim();
+  //       setQuestion(extractQuestion);
+  //       setCode(extractCode);
+  //     }
+  //   }, [question,code]);
+  //   console.log(code);
+  //   console.log(question);
+  // };
 
+  React.useEffect(() => {
+    const match = text.match(/'''([\s\S]+?)'''([\s\S]+)/);
+    if(match){
+      const extractQuestion = match[1].trim();
+      const extractCode = match[2].trim();
+      setQuestion(extractQuestion);
+      setCode(extractCode);
+    }
+  }, [text]);
+
+  React.useEffect(() => {
+    setQuery({
+      question: question,
+      curr_code: code,
+      error: editorError,
+      solution: " ",
+    });
+    console.log(code);
+    console.log(question);
+  }, [code,question]);
+
+  
   const requestError = () => {
     messageHandler.request<string>('GET_EDITOR_ERROR').then((error) => {
       setEditorError(error);
     });
   };
 
-  const extractQuestionFromCode = (text : string) => {
-    const match = text.match(/'''([\s\S]+?)'''([\s\S]+)/);
-    if(match) {
-      const extractQuestion = match[1].trim();
-      const extractCode = match[2].trim();
-
-      setQuestion(extractQuestion);
-      setCode(extractCode);
-    }
-  };
-
   
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
@@ -107,20 +148,22 @@ export const App: React.FunctionComponent<
     }
   };
   const setupButton = () => {
-    // setNewMessageAdded(true);
-    // setInputValue("");
-    // setMessage("");
-    // setIsLoading(true);
+    setNewMessageAdded(false);
+    // console.log("setNewMessageAdded(false)");
+    setInputValue("");
+    // console.log("setInputValue( )");
+    setMessage("");
+    // console.log("setMessage( )");
+    setIsLoading(true);
+    // console.log("setIsLoading(true)");
 
     requestEditorText();
-    // extractQuestionFromCode(code);
     // requestError();
-    // console.log('question:', question);
-    console.log('code:', code);
-    // console.log('error:', editorError);
+    // console.log(code);
+    // console.log(question);
   };
 
-  const handlePromptKnowledgeClick = async() => {
+  const handlePromptKnowledgeClick = async(apiEndpoint: React.SetStateAction<string>) => {
 
     const messageTitle = "Please help me with the basic knowledge";
     // console.log(messageTitle);
@@ -133,36 +176,58 @@ export const App: React.FunctionComponent<
       content: "Please help me with the basic knowledge",
     };
     setChatHistory((chatHistory) => [...(chatHistory || []), userMessage]);
+    setAPIEndpoint(apiEndpoint);
     setupButton();
-
-    const query = {
-      question: question,
-      // question: "Given two numbers, write a Python code to find the Maximum of these two numbers.",
-      curr_code: code,
-      error: editorError,
-      //still need to add the solution
-      solution: " ",
-    };
-    // console.log(query);
-
+    // console.log('After setupButton', query);
     // const url = local + '/dev/basic-knowledge';
-    // //This is the axios version, but not sure if it works
+    // // // This is the axios version, but not sure if it works
     // try {
-    //   const response = await axios.post(url, query, {
-    //     headers: {
-    //       'Accept': 'application/json',
-    //       'Content-Type': 'application/json'
-    //     },
-    //   });
-    //   console.log(response.data);
-    //   setMessage(response.data.response);
-    //   setNewMessageAdded(true);
+    //   // const response = await axios.post(url, query, {
+    //   //   headers: {
+    //   //     'Accept': 'application/json',
+    //   //     'Content-Type': 'application/json'
+    //   //   },
+    //   // });
+    //   // console.log(response.data);
+    //   // setMessage(response.data.response);
+    //   // setNewMessageAdded(true);
+    //   // console.log('Updated query:', query);
     // } catch (error) {
     //   console.log(error);
     // }finally{
     //   setIsLoading(false);
     // }
   };
+
+  
+  React.useEffect(() => {
+    const fetchData = async () => {
+      if (query && apiEndpoint) {
+        const url = `${local}${apiEndpoint}`;
+        try { 
+          const response = await axios.post(url, query, {
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+          });
+          console.log(response.data);
+          setMessage(response.data.response);
+          // setMessage(response.data);
+          setNewMessageAdded(true);
+          // console.log('Updated query:', query);
+          countRef.current = countRef.current + 1;
+          console.log(countRef.current); 
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    fetchData();
+  }, [query]);
+
 
   const handlePromptSyntaxClick = async () => {
     const messageTitle = "Please help me with the basic syntax";
@@ -177,7 +242,6 @@ export const App: React.FunctionComponent<
     };
     setChatHistory((chatHistory) => [...(chatHistory || []), userMessage]);
     setupButton();
-
     const query = {
       question: question,
       curr_code: code,
@@ -306,25 +370,35 @@ export const App: React.FunctionComponent<
       console.log(error);
     } finally { setIsLoading(false); }
   };
-
+  
   const highlightCode = (msg: any) => {
     const messageText = typeof msg === 'string' ? msg : '';
-  
-    const hasOpeningTicks = messageText.includes('```') && !messageText.includes('```', messageText.indexOf('```') + 3);
-    const correctedMessage = hasOpeningTicks ? `${messageText}\`\`\`` : messageText;
-    const formattedMessage = correctedMessage.replace(/```(\w+)?\s*([\s\S]+?)```/g, (match, lang = 'plaintext', code) => {
-      const validLang = Prism.languages[lang] ? lang : 'plaintext';
-      const langClass = `language-${validLang}`;
-      const langTitle = lang || 'code';
-      const highlightedCode = validLang === 'plaintext' ? code : Prism.highlight(code, Prism.languages[validLang], validLang);
-      return `<div class="code-block">
-                <div class="code-title">${langTitle}</div>
-                <pre><code class="${langClass}">${highlightedCode}</code></pre>
-              </div>`;
-    });
-    return { __html: formattedMessage };
+    const formatText = (formatText: any) => {
+      let formattedText = formatText
+        .replace(/\n\s*\n/g, '</p><p>') 
+        .replace(/\n/g, '<br>')  
+        .replace(/^/g, '<p>')  
+        .replace(/$/g, '</p>');  
+      return formattedText;
+    };
+    return {
+      __html: messageText.split(/(```[\s\S]+?```)/g).map((section) => {
+        if (section.startsWith('```')) {
+          const [_, lang = 'plaintext', code] = section.match(/```(\w+)?\s*([\s\S]+?)```/) || [];
+          const validLang = Prism.languages[lang] ? lang : 'plaintext';
+          const langClass = `language-${validLang}`;
+          const highlightedCode = Prism.highlight(code, Prism.languages[validLang], validLang);
+          return `<div class="code-block">
+                      <div class="code-title">${validLang.toUpperCase()}</div>
+                      <pre><code class="${langClass}">${highlightedCode}</code></pre>
+                    </div>`;
+        } else {
+          return formatText(section);
+        }
+      }).join('')
+    };
   };
-
+  
   React.useEffect(() => {
     if (chatOutputRef.current && newMessageAdded) {
       chatOutputRef.current.scrollTop = chatOutputRef.current.scrollHeight;
@@ -374,7 +448,7 @@ export const App: React.FunctionComponent<
                   <div className="promptName">Basic Syntax</div>
                   <div className="promptDescription">What is the correct syntax?</div>
                 </button>
-                <button onClick={handlePromptKnowledgeClick} className="btn">
+                <button onClick={()=>handlePromptKnowledgeClick('/dev/basic-knowledge')} className="btn">
                   <div className="promptName">Basic Knowledge</div>
                   <div className="promptDescription">Don't understand what is the question?</div>
                 </button>
