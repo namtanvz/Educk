@@ -33,8 +33,8 @@ export function activate(context: vscode.ExtensionContext) {
         panel.webview.postMessage({
           command,
           payload: getEditorError(),
-        } as MessageHandlerData<Array<any>>);
-        vscode.window.showInformationMessage("Educk🦆: Quack the editor errors.");
+        } as MessageHandlerData<string>);
+        vscode.window.showInformationMessage("Educk🦆: Quack the editor errors,");
       }
 		});
 		panel.webview.html = getWebviewContent(context, panel.webview);
@@ -54,7 +54,8 @@ function getEditorText() {
 
 function getEditorError() {
 	const diagnostics = vscode.languages.getDiagnostics();
-	return diagnostics;
+  return diagnostics.join(',');
+  
 }
 
 

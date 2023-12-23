@@ -40,7 +40,7 @@ export const App: React.FunctionComponent<
   
   const [code, setCode] = React.useState<string>("");
   const [question, setQuestion] = React.useState<string>("");
-  const [editorError, setEditorError] = React.useState<string[]>([""]);
+  const [editorError, setEditorError] = React.useState<string>("");
   const local = "http://localhost:8000";
 
   React.useEffect(() => {
@@ -64,7 +64,7 @@ export const App: React.FunctionComponent<
   };
 
   const requestError = () => {
-    messageHandler.request<string[]>('GET_EDITOR_ERROR').then((error) => {
+    messageHandler.request<string>('GET_EDITOR_ERROR').then((error) => {
       setEditorError(error);
     });
   };
@@ -283,8 +283,8 @@ export const App: React.FunctionComponent<
     try {
       const url = new URL('http://localhost:8000/dev/test_prompt');
       url.searchParams.append('user_prompt', inputValue); // Assuming inputValue is what you want to send
-      const response = await fetch(url.toString());
-      const data = await response.json();
+      const response = await axios.post(url.toString());
+      const data = response.data;
       setMessage(data.response);
       console.log(data);
       setNewMessageAdded(true);
